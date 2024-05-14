@@ -1,22 +1,28 @@
 import streamlit as st
 from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
-import matplotlib.pyplot as plt
 
 def rgb_to_hsv(image):
     return image.convert("HSV")
 
 def calculate_histogram(image):
     image = np.array(image)
-    color = ('r', 'g', 'b')
-    plt.figure()
-    for i, col in enumerate(color):
-        histr, bin_edges = np.histogram(image[:, :, i], bins=256, range=(0, 256))
-        plt.plot(bin_edges[0:-1], histr, color=col)
-    plt.title('Histogram')
-    plt.xlabel('Pixel value')
-    plt.ylabel('Frequency')
-    st.pyplot(plt)
+    hist_red, bins_red = np.histogram(image[:, :, 0], bins=256, range=(0, 256))
+    hist_green, bins_green = np.histogram(image[:, :, 1], bins=256, range=(0, 256))
+    hist_blue, bins_blue = np.histogram(image[:, :, 2], bins=256, range=(0, 256))
+
+    hist_image = Image.new('RGB', (256, 100), (255, 255, 255))
+    for x in range(256):
+        r = int(hist_red[x] / hist_red.max() * 100)
+        g = int(hist_green[x] / hist_green.max() * 100)
+        b = int(hist_blue[x] / hist_blue.max() * 100)
+        for y in range(r):
+            hist_image.putpixel((x, 99 - y), (255, 0, 0))
+        for y in range(g):
+            hist_image.putpixel((x, 99 - y), (0, 255, 0))
+        for y in range(b):
+            hist_image.putpixel((x, 99 - y), (0, 0, 255))
+    return hist_image
 
 def adjust_brightness_contrast(image, brightness=1.0, contrast=1.0):
     enhancer = ImageEnhance.Brightness(image)
@@ -48,10 +54,11 @@ if uploaded_file is not None:
 
     if st.button("Calculate Histogram"):
         st.write("Histogram")
-        calculate_histogram(image)
+        hist_image = calculate_histogram(image)
+        st.image(hist_image, caption='Histogram', use_column_width=True)
 
-    brightness = st.slider('Brightness', 0.0, 2.0, 1.0)
-    contrast = st.slider('Contrast', 0.0, 2.0, 1.0)
+    brightness = st.slider('Brightness', 0.5, 2.0, 1.0)
+    contrast = st.slider('Contrast', 0.5, 2.0, 1.0)
 
     if st.button("Apply Brightness & Contrast"):
         adjusted_image = adjust_brightness_contrast(image, brightness, contrast)
