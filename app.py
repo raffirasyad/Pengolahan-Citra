@@ -3,7 +3,8 @@ from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
 
 def rgb_to_hsv(image):
-    return image.convert("HSV")
+    hsv_image = image.convert("HSV")
+    return hsv_image.convert("RGB")  # Convert back to RGB for display purposes
 
 def calculate_histogram(image):
     image = np.array(image)
