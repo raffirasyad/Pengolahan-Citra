@@ -1,42 +1,36 @@
 import streamlit as st
-import cv2
+from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
-from matplotlib import pyplot as plt
-from PIL import Image
+import matplotlib.pyplot as plt
 
 def rgb_to_hsv(image):
-    return cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+    return image.convert("HSV")
 
 def calculate_histogram(image):
-    color = ('b','g','r')
+    image = np.array(image)
+    color = ('r', 'g', 'b')
     plt.figure()
     for i, col in enumerate(color):
-        histr = cv2.calcHist([image], [i], None, [256], [0, 256])
-        plt.plot(histr, color=col)
-        plt.xlim([0, 256])
+        histr, bin_edges = np.histogram(image[:, :, i], bins=256, range=(0, 256))
+        plt.plot(bin_edges[0:-1], histr, color=col)
     plt.title('Histogram')
     plt.xlabel('Pixel value')
     plt.ylabel('Frequency')
     st.pyplot(plt)
 
-def adjust_brightness_contrast(image, brightness=0, contrast=0):
-    brightness = int((brightness - 50) * 2.55)  # Convert to range -255 to 255
-    contrast = int((contrast - 50) * 2.55)      # Convert to range -127 to 127
-    B = brightness / 255.0
-    c = contrast / 127.0
-    k = np.tan((45 + 44 * c) / 180 * np.pi)
-
-    img = (image - 127.5 * (1 - B)) * k + 127.5 * (1 + B)
-    img = np.clip(img, 0, 255).astype(np.uint8)
-    return img
+def adjust_brightness_contrast(image, brightness=1.0, contrast=1.0):
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(brightness)
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(contrast)
+    return image
 
 def detect_contours(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    edged = cv2.Canny(blurred, 50, 150)
-    contours, _ = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    gray = image.convert("L")
+    blurred = gray.filter(ImageFilter.GaussianBlur(5))
+    edges = blurred.filter(ImageFilter.FIND_EDGES)
     contour_img = image.copy()
-    cv2.drawContours(contour_img, contours, -1, (0, 255, 0), 2)
+    contour_img.paste(edges, mask=edges)
     return contour_img
 
 st.title("Image Manipulation Web App")
@@ -44,7 +38,7 @@ st.title("Image Manipulation Web App")
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = np.array(Image.open(uploaded_file))
+    image = Image.open(uploaded_file)
     st.image(image, caption='Uploaded Image', use_column_width=True)
     st.write("")
 
@@ -56,8 +50,8 @@ if uploaded_file is not None:
         st.write("Histogram")
         calculate_histogram(image)
 
-    brightness = st.slider('Brightness', 0, 100, 50)
-    contrast = st.slider('Contrast', 0, 100, 50)
+    brightness = st.slider('Brightness', 0.0, 2.0, 1.0)
+    contrast = st.slider('Contrast', 0.0, 2.0, 1.0)
 
     if st.button("Apply Brightness & Contrast"):
         adjusted_image = adjust_brightness_contrast(image, brightness, contrast)
