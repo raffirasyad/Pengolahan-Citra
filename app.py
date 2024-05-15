@@ -1,9 +1,4 @@
 
-print("Nama     : Muhammad Raffi Rasyad")
-print("Nim      : 312210184")
-print("Kelas    : TI.22.B1")
-
-
 import streamlit as st
 from PIL import Image, ImageEnhance, ImageFilter
 import numpy as np
@@ -47,6 +42,7 @@ def detect_contours(image):
     return contour_img
 
 st.title("Image Manipulation Web App")
+st.title("Nama : Muhammad Raffi Rasyad")
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
