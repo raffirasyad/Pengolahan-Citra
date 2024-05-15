@@ -1,7 +1,7 @@
 
-pirnt("Nama     : Muhammad Raffi Rasyad")
+print("Nama     : Muhammad Raffi Rasyad")
 print("Nim      : 312210184")
-pirnt("Kelas    : TI.22.B1")
+print("Kelas    : TI.22.B1")
 
 
 import streamlit as st
