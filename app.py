@@ -42,7 +42,11 @@ def detect_contours(image):
     return contour_img
 
 st.title("Image Manipulation Web App")
-st.title("Nama : Muhammad Raffi Rasyad")
+st.markdown("""
+    <h3>Nama  : Muhammad Raffi Rasyad</h3>
+    <h3>Nim   : 312210184</h3>
+    <h3>Kelas : TI.22.B1</h3>
+    """, unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
